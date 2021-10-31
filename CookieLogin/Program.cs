@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace CookieLogin
@@ -11,7 +12,11 @@ namespace CookieLogin
             var serviceCollection = new ServiceCollection()
                 .AddSingleton<BackloggeryClient>();
 
-            serviceCollection.AddHttpClient<BackloggeryClient>();
+            serviceCollection.AddHttpClient<BackloggeryClient>()
+                .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+                {
+                    AllowAutoRedirect = false,
+                });
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var backloggeryClient = serviceProvider.GetRequiredService<BackloggeryClient>();
@@ -25,7 +30,10 @@ namespace CookieLogin
                 return;
             }
 
-            var html = await backloggeryClient.GetHtmlAsync(username);
+            Console.Write("Enter password: ");
+            var password = Console.ReadLine();
+
+            var html = await backloggeryClient.GetHtmlAsync(username, password);
 
             Console.WriteLine(html);
         }
